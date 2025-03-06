@@ -5,7 +5,7 @@
 venv/
 
 # Ignorar arquivos temporários e cache
-.cache/
+.cache
 __pycache__/
 
 # Ignorar arquivos compilados do Python
