@@ -1,6 +1,8 @@
-# Ignorar credenciais, banco de dados e cache
-.env
-.cache
+# Ignorar credenciais e banco de dados
+.envz
 
 # Ignorar ambiente virtual (se houver)
 venv/
+
+# Ignorar credenciais do .cache
+.cache
