@@ -3,6 +3,9 @@ from tortoise.contrib.fastapi import register_tortoise
 from dotenv import load_dotenv
 import os
 
+# Carregar variáveis do .env
+load_dotenv()
+
 class HistoricoBusca(models.Model):
     id = fields.IntField(pk=True)
     texto_digitado = fields.TextField()
