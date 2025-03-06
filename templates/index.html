@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recomendação de Playlists</title>
+    <script>
+        async function buscarPlaylist() {
+            let texto = document.getElementById("texto").value;
+            let resposta = await fetch("/recomendar_playlist/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ texto: texto })
+            });
+            let dados = await resposta.json();
+            let resultadoDiv = document.getElementById("resultado");
+
+            if (dados.playlist_recomendada) {
+                resultadoDiv.innerHTML = `
+                    <h3>Playlist Recomendada:</h3>
+                    <p><strong>${dados.playlist_recomendada.nome}</strong></p>
+                    <a href="https://open.spotify.com/playlist/${dados.playlist_recomendada.id}" target="_blank">🎵 Abrir no Spotify</a>`;
+            } else {
+                resultadoDiv.innerHTML = "<p>Nenhuma playlist encontrada.</p>";
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>🎶 Descubra Playlists com Base no Seu Humor</h1>
+    <input type="text" id="texto" placeholder="Digite como está se sentindo..." />
+    <button onclick="buscarPlaylist()">Buscar</button>
+    <div id="resultado"></div>
+</body>
+</html>
