@@ -9,7 +9,7 @@ load_dotenv()
 class HistoricoBusca(models.Model):
     id = fields.IntField(pk=True)
     texto_digitado = fields.TextField()
-    sentimento = fields.CharField(max_length=20)
+    sentimento = fields.CharField(max_length=255)
     playlist_nome = fields.CharField(max_length=255)
     playlist_id = fields.CharField(max_length=255)
 
@@ -18,8 +18,8 @@ class HistoricoBusca(models.Model):
 
 class Feedback(models.Model):
     id = fields.IntField(pk=True)
-    sentimento_detectado = fields.CharField(max_length=20)
-    sentimento_corrigido = fields.CharField(max_length=20, null=True)
+    sentimento_detectado = fields.CharField(max_length=255)
+    sentimento_corrigido = fields.CharField(max_length=255, null=True)
     confirmado = fields.BooleanField()
 
     class Meta:
