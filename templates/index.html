@@ -9,12 +9,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- CSS Personalizado -->
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
 </head>
 <body>
 
 <!-- HEADER -->
-<div id="header-container"></div>
+{% include 'shared/_header.html' %}
 
 <div class="container text-center mt-4">
     <h2 class="mb-3">📌 Como está se sentindo?</h2>
@@ -31,8 +31,8 @@
         </div>
     </div>
 
-        <!-- 🎵 Playlist Recomendada -->
-    <div class="playlist-container" id="playlist-container">
+    <!-- 🎵 Playlist Recomendada -->
+    <div class="playlist-container" id="playlist-container" style="display: none;">
         <h3 class="mt-3">🎶 Sua Playlist:</h3>
         <h4 id="playlist-sentimento" class="mt-2"></h4>  
         <img id="playlist-image" class="playlist-image" src="" alt="Imagem da Playlist">
@@ -78,12 +78,25 @@
     </div>
 </div>
 
-<!--FOOTER -->
-<div id="footer-container"></div> 
+<!-- FOOTER -->
+{% include 'shared/_footer.html' %} 
 
 <!-- Importação do JavaScript -->
-<script src="./script.js" defer></script>
+<script src="{{ url_for('static', path='/script.js') }}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Carregar Header e Footer dinamicamente via fetch()
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("{{ url_for('static', path='/partials/_header.html') }}")
+            .then(response => response.text())
+            .then(data => document.getElementById("header-container").innerHTML = data);
+
+        fetch("{{ url_for('static', path='/partials/_footer.html') }}")
+            .then(response => response.text())
+            .then(data => document.getElementById("footer-container").innerHTML = data);
+    });
+</script>
 
 </body>
 </html>

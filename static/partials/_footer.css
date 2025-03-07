@@ -1,0 +1,9 @@
+/* Fixar o footer no final da página */
+.footer {
+    background-color: #f8f9fa; /* Cor de fundo do footer */
+    padding: 15px;
+    text-align: center;
+    width: 100%;
+    position: relative;
+    bottom: 0;
+}

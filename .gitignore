@@ -1,25 +1,49 @@
-# Ignorar credenciais e arquivos sensíveis
+# 🔹 Ignorar variáveis de ambiente (NUNCA envie credenciais!)
 .env
+.env.local
+.env.*.local
+
+# 🔹 Ignorar cache de credenciais do Spotify
 .cache
 
-# Ignorar ambiente virtual do Python
+# 🔹 Ignorar ambiente virtual do Python
 venv/
 __pycache__/
-
-# Ignorar configurações locais do VS Code
-.vscode/
-*.code-workspace
-
-# Ignorar arquivos compilados do Python
 *.pyc
 *.pyo
 *.pyd
-*.log
 
-# Ignorar pastas do sistema operacional
+# 🔹 Ignorar banco de dados local (caso use SQLite para testes)
+*.sqlite3
+db.sqlite3
+instance/
+
+# 🔹 Ignorar arquivos de log e temporários
+*.log
+*.out
+*.pid
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# 🔹 Ignorar configurações do VS Code e sistema operacional
+.vscode/
 .DS_Store
 Thumbs.db
+*.code-workspace
 
-# Ignorar arquivos de build do Vercel e Render
+# 🔹 Ignorar arquivos de build do Render e Vercel
 .vercel/
-.render/
+render.yaml
+build/
+dist/
+out/
+
+# 🔹 Ignorar arquivos do Node.js (caso tenha pacotes no frontend)
+node_modules/
+package-lock.json
+
+# 🔹 Ignorar arquivos de dependências do Python (pode ser regenerado com `pip install -r requirements.txt`)
+pip-log.txt
+pip-delete-this-directory.txt
