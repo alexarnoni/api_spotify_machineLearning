@@ -1,12 +1,25 @@
-# Ignorar credenciais e banco de dados
+# Ignorar credenciais e arquivos sensíveis
 .env
-
-# Ignorar ambiente virtual (se houver)
-venv/
-
-# Ignorar arquivos temporários e cache
 .cache
+
+# Ignorar ambiente virtual do Python
+venv/
 __pycache__/
+
+# Ignorar configurações locais do VS Code
+.vscode/
+*.code-workspace
 
 # Ignorar arquivos compilados do Python
 *.pyc
+*.pyo
+*.pyd
+*.log
+
+# Ignorar pastas do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Ignorar arquivos de build do Vercel e Render
+.vercel/
+.render/

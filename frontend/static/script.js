@@ -1,5 +1,4 @@
-// Definir a URL da API hospedada no Render
-let apiUrl = "https://api-spotify-ml.onrender.com";
+let apiUrl = "https://api-spotify-ml.onrender.com"; // URL do backend hospedado no Render
 
 function getSentimentoIcon(sentimento) {
     const icones = {

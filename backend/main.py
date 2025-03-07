@@ -11,6 +11,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
 from collections import Counter
 from fastapi.responses import JSONResponse
+from fastapi.middleware import CORSMiddleware
 import random
 import spotipy
 from dotenv import load_dotenv
@@ -21,6 +22,14 @@ app = FastAPI()
 
 # Inicializar Banco de Dados PostgreSQL
 init_db(app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite que o frontend faça requisições de qualquer origem
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Inicializando modelo de análise de sentimentos (BERT)
 sentiment_analysis = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
