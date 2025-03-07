@@ -1,3 +1,6 @@
+// Definir a URL da API hospedada no Render
+let apiUrl = "https://api-spotify-ml.onrender.com";
+
 function getSentimentoIcon(sentimento) {
     const icones = {
         "Positivo 😀": "😃",
@@ -28,7 +31,7 @@ async function buscarPlaylist() {
     feedbackContainer.style.display = "none";
     loading.style.display = "block";
 
-    let response = await fetch("/recomendar_playlist/", {
+    let response = await fetch(`${apiUrl}/recomendar_playlist/`, {  // 🟢 Atualizado para usar apiUrl
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texto: texto })
@@ -49,14 +52,14 @@ async function buscarPlaylist() {
         document.getElementById("playlist-image").src = playlist.image;
         document.getElementById("playlist-link").href = `https://open.spotify.com/playlist/${playlist.id}`;
         playlistContainer.style.display = "block";
-        feedbackContainer.style.display = "block"; 
+        feedbackContainer.style.display = "block";
 
         carregarHistorico();
     }
 }
 
 async function carregarHistorico() {
-    let response = await fetch("/historico/");
+    let response = await fetch(`${apiUrl}/historico/`);  // 🟢 Atualizado para usar apiUrl
     let data = await response.json();
 
     let tabela = document.getElementById("historico-tabela");
@@ -80,26 +83,25 @@ async function carregarHistorico() {
 }
 
 async function carregarEstatisticas() {
-    let response = await fetch("/estatisticas/");
+    let response = await fetch(`${apiUrl}/estatisticas/`);  // 🟢 Atualizado para usar apiUrl
     let data = await response.json();
 
     let ctx = document.getElementById("grafico-estatisticas").getContext("2d");
 
-    // Se já existe um gráfico, destruí-lo antes de criar um novo
     if (window.graficoEstatisticas) {
         window.graficoEstatisticas.destroy();
     }
 
     window.graficoEstatisticas = new Chart(ctx, {
-        type: "doughnut",  // Gráfico de pizza atualizado 🍩
+        type: "doughnut",
         data: {
             labels: ["Positivo 😀", "Negativo 😢", "Neutro 😐", "Raiva 😡", "Motivação 💪", "Nostalgia 🕰️"],
             datasets: [{
                 label: "Quantidade de buscas",
                 data: [
-                    data["Positivo 😀"], 
-                    data["Negativo 😢"], 
-                    data["Neutro 😐"], 
+                    data["Positivo 😀"],
+                    data["Negativo 😢"],
+                    data["Neutro 😐"],
                     data["Raiva 😡"],
                     data["Motivação 💪"],
                     data["Nostalgia 🕰️"]
@@ -125,16 +127,16 @@ async function enviarFeedback(confirmado) {
 
     if (!confirmado) {
         sentimentoCorrigido = prompt("Qual seria o sentimento correto?");
-        if (!sentimentoCorrigido) return; // Se o usuário cancelar, não faz nada
+        if (!sentimentoCorrigido) return;
     }
 
-    let response = await fetch("/feedback/", {
+    let response = await fetch(`${apiUrl}/feedback/`, {  // 🟢 Atualizado para usar apiUrl
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-            sentimento: sentimentoAtual, 
-            confirmado: confirmado, 
-            correcao: sentimentoCorrigido 
+        body: JSON.stringify({
+            sentimento: sentimentoAtual,
+            confirmado: confirmado,
+            correcao: sentimentoCorrigido
         })
     });
 
@@ -143,7 +145,7 @@ async function enviarFeedback(confirmado) {
 }
 
 async function carregarEstatisticasFeedback() {
-    let response = await fetch("/estatisticas_feedback/");
+    let response = await fetch(`${apiUrl}/estatisticas_feedback/`);  // 🟢 Atualizado para usar apiUrl
     let data = await response.json();
 
     let ctx = document.getElementById("grafico-feedback").getContext("2d");
@@ -173,17 +175,15 @@ async function carregarEstatisticasFeedback() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const darkModeToggle = document.getElementById("darkModeToggle");
     const body = document.body;
 
-    // Verificar se já há uma preferência salva
     if (localStorage.getItem("darkMode") === "enabled") {
         body.classList.add("dark-mode");
     }
 
-    // Alternar Dark Mode
-    darkModeToggle.addEventListener("click", function() {
+    darkModeToggle.addEventListener("click", function () {
         body.classList.toggle("dark-mode");
         if (body.classList.contains("dark-mode")) {
             localStorage.setItem("darkMode", "enabled");
@@ -193,7 +193,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// Atualiza os gráficos ao carregar a página
 window.onload = function () {
     carregarHistorico();
     setTimeout(carregarEstatisticas, 500);
