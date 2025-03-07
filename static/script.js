@@ -4,6 +4,8 @@ function getSentimentoIcon(sentimento) {
         "Negativo 😢": "😢",
         "Neutro 😐": "😐",
         "Raiva 😡": "😡",
+        "Motivação 💪": "💪",
+        "Nostalgia 🕰️": "🕰️",
         "Indefinido 🤔": "❓"
     };
     return icones[sentimento] || "❓";
@@ -12,6 +14,7 @@ function getSentimentoIcon(sentimento) {
 async function buscarPlaylist() {
     let texto = document.getElementById("texto").value;
     let playlistContainer = document.getElementById("playlist-container");
+    let feedbackContainer = document.getElementById("feedback-container");
     let mensagemErro = document.getElementById("mensagem-erro");
     let loading = document.getElementById("loading");
 
@@ -22,6 +25,7 @@ async function buscarPlaylist() {
 
     mensagemErro.innerText = "";
     playlistContainer.style.display = "none";
+    feedbackContainer.style.display = "none";
     loading.style.display = "block";
 
     let response = await fetch("/recomendar_playlist/", {
@@ -45,8 +49,8 @@ async function buscarPlaylist() {
         document.getElementById("playlist-image").src = playlist.image;
         document.getElementById("playlist-link").href = `https://open.spotify.com/playlist/${playlist.id}`;
         playlistContainer.style.display = "block";
-        
-        // Atualizar histórico após uma nova recomendação
+        feedbackContainer.style.display = "block"; 
+
         carregarHistorico();
     }
 }
@@ -56,7 +60,7 @@ async function carregarHistorico() {
     let data = await response.json();
 
     let tabela = document.getElementById("historico-tabela");
-    tabela.innerHTML = "";  // Limpa a tabela antes de adicionar novas entradas
+    tabela.innerHTML = "";
 
     if (data.length === 0) {
         tabela.innerHTML = "<tr><td colspan='4'>Nenhum histórico encontrado.</td></tr>";
@@ -64,9 +68,10 @@ async function carregarHistorico() {
     }
 
     data.forEach(item => {
+        let sentimentoIcon = getSentimentoIcon(item.sentimento);
         let row = `<tr>
             <td>${item.texto_digitado}</td>
-            <td>${item.sentimento}</td>
+            <td>${sentimentoIcon} ${item.sentimento}</td>
             <td>${item.playlist_nome}</td>
             <td><a href="${item.link}" target="_blank" class="btn btn-sm btn-success">🎵 Ouvir</a></td>
         </tr>`;
@@ -86,13 +91,20 @@ async function carregarEstatisticas() {
     }
 
     window.graficoEstatisticas = new Chart(ctx, {
-        type: "pie",  // Alterado para gráfico de pizza 🍕
+        type: "doughnut",  // Gráfico de pizza atualizado 🍩
         data: {
-            labels: ["Positivo 😀", "Negativo 😢", "Neutro 😐", "Raiva 😡"],
+            labels: ["Positivo 😀", "Negativo 😢", "Neutro 😐", "Raiva 😡", "Motivação 💪", "Nostalgia 🕰️"],
             datasets: [{
                 label: "Quantidade de buscas",
-                data: [data["Positivo 😀"], data["Negativo 😢"], data["Neutro 😐"], data["Raiva 😡"]],
-                backgroundColor: ["#28a745", "#dc3545", "#ffc107", "#6c757d"]
+                data: [
+                    data["Positivo 😀"], 
+                    data["Negativo 😢"], 
+                    data["Neutro 😐"], 
+                    data["Raiva 😡"],
+                    data["Motivação 💪"],
+                    data["Nostalgia 🕰️"]
+                ],
+                backgroundColor: ["#28a745", "#dc3545", "#ffc107", "#6c757d", "#007bff", "#ff69b4"]
             }]
         },
         options: {
@@ -107,8 +119,83 @@ async function carregarEstatisticas() {
     });
 }
 
-window.onload = function () {
-    carregarHistorico(); // Carregar histórico automaticamente ao abrir a página
-    setTimeout(carregarEstatisticas, 500);  // Pequeno atraso para evitar conflitos no carregamento
-};
+async function enviarFeedback(confirmado) {
+    let sentimentoAtual = document.getElementById("playlist-sentimento").innerText;
+    let sentimentoCorrigido = null;
 
+    if (!confirmado) {
+        sentimentoCorrigido = prompt("Qual seria o sentimento correto?");
+        if (!sentimentoCorrigido) return; // Se o usuário cancelar, não faz nada
+    }
+
+    let response = await fetch("/feedback/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+            sentimento: sentimentoAtual, 
+            confirmado: confirmado, 
+            correcao: sentimentoCorrigido 
+        })
+    });
+
+    let data = await response.json();
+    alert(data.mensagem);
+}
+
+async function carregarEstatisticasFeedback() {
+    let response = await fetch("/estatisticas_feedback/");
+    let data = await response.json();
+
+    let ctx = document.getElementById("grafico-feedback").getContext("2d");
+
+    if (window.graficoFeedback) {
+        window.graficoFeedback.destroy();
+    }
+
+    window.graficoFeedback = new Chart(ctx, {
+        type: "pie",
+        data: {
+            labels: ["Confirmados ✅", "Corrigidos ❌"],
+            datasets: [{
+                data: [data["Confirmados"], data["Corrigidos"]],
+                backgroundColor: ["#28a745", "#dc3545"]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: "bottom"
+                }
+            }
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    const body = document.body;
+
+    // Verificar se já há uma preferência salva
+    if (localStorage.getItem("darkMode") === "enabled") {
+        body.classList.add("dark-mode");
+    }
+
+    // Alternar Dark Mode
+    darkModeToggle.addEventListener("click", function() {
+        body.classList.toggle("dark-mode");
+        if (body.classList.contains("dark-mode")) {
+            localStorage.setItem("darkMode", "enabled");
+        } else {
+            localStorage.setItem("darkMode", "disabled");
+        }
+    });
+});
+
+// Atualiza os gráficos ao carregar a página
+window.onload = function () {
+    carregarHistorico();
+    setTimeout(carregarEstatisticas, 500);
+    setTimeout(carregarEstatisticasFeedback, 800);
+};

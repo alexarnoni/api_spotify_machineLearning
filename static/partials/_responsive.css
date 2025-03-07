@@ -1,0 +1,15 @@
+/* 📱 Ajustes para Mobile */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .row {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .col-md-6 {
+        width: 100%;
+    }
+}

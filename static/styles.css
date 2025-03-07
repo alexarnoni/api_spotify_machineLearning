@@ -1,89 +1,44 @@
+@import url("partials/_header.css");
+@import url("partials/_footer.css");
+@import url("partials/_darkmode.css");
+@import url("partials/_animations.css");
+@import url("partials/_responsive.css");
+
+/* 🌟 Estilização Global */
 body {
     background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
 }
 
-.container {
-    max-width: 600px;
-    margin-top: 50px;
-}
-
-.playlist-container {
-    display: none;
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 10px;
-    background: #fff;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
-.playlist-image {
-    width: 50%;  /* Reduz o tamanho para 50% do container */
-    max-width: 200px;  /* Define um tamanho máximo */
-    border-radius: 10px;  /* Bordas arredondadas */
-    margin-top: 10px;
-}
-
-#playlist-sentimento {
-    font-size: 22px;
-    font-weight: bold;
-}
-
-#mensagem-erro {
-    font-weight: bold;
-}
-
-/* Garante que o histórico e o gráfico fiquem lado a lado */
-/* Garante que o histórico tenha mais espaço que o gráfico */
+/* 📜 Histórico e 📊 Estatísticas lado a lado */
 .row {
     display: flex;
+    align-items: start;
     justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
 }
 
-/* Histórico ocupa mais espaço */
-.col-historico {
-    flex: 2;  /* Ocupa mais espaço */
-    min-width: 450px;
-    padding: 15px;
-}
-
-/* Gráfico ocupa menos espaço */
-.col-grafico {
-    flex: 1; /* Ocupa menos espaço */
-    min-width: 300px;
-    padding: 15px;
-}
-
-/* Ajusta o tamanho do gráfico */
+/* 📊 Gráfico Responsivo */
 .chart-container {
     width: 100%;
-    max-width: 300px;  /* Reduzi um pouco o tamanho */
-    height: auto;
-    margin: auto;
-    padding: 10px;
+    height: 300px;
 }
 
-/* Permite rolagem no histórico caso ele fique muito grande */
+/* 📜 Tabela do Histórico */
 .table-responsive {
-    max-height: 500px; /* Aumentei a altura máxima */
+    max-height: 350px;
     overflow-y: auto;
 }
 
-/* Ajuste para telas menores */
-@media (max-width: 992px) {
-    .row {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .col-historico,
-    .col-grafico {
-        width: 100%;
-        text-align: center;
-    }
-
-    .chart-container {
-        max-width: 300px;
-    }
+/* 🎵 Playlist Recomendada */
+.playlist-container {
+    display: none;
+    margin-top: 20px;
 }
+
+.playlist-image {
+    width: 50%;
+    max-width: 200px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+

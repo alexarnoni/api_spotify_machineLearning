@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from database import init_db, HistoricoBusca
+from database import init_db, HistoricoBusca, Feedback
 from pydantic import BaseModel
 from transformers import pipeline
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -39,36 +39,45 @@ class TextoEntrada(BaseModel):
     texto: str
 
 # Função para análise de sentimentos
-def analisar_sentimento_bert(texto):
+async def analisar_sentimento_bert(texto):
     resultado = sentiment_analysis(texto)
     label = resultado[0]['label']
 
-    # 🔥 NOVO: Dicionário de palavras-chave para emoções mais específicas
-    palavras_raiva = ["raiva", "irritado", "puto", "ódio", "furioso", "bravo", "irritante", "explodindo"]
-    palavras_tristeza = ["triste", "deprimido", "chorar", "angustiado", "sofrendo", "desanimado"]
-    palavras_felicidade = ["feliz", "alegre", "contente", "animado", "empolgado", "maravilhoso"]
-    palavras_neutras = ["neutro", "indiferente", "tanto faz", "normal", "ok", "mediano", "estável"]
-
-    # 🔥 Verificar palavras-chave no texto digitado primeiro
+    palavras_raiva = ["raiva", "irritado", "puto", "ódio", "furioso", "bravo", "explodindo"]
+    palavras_tristeza = ["triste", "deprimido", "chorar", "angustiado", "sofrendo", "melancólico"]
+    palavras_felicidade = ["feliz", "alegre", "contente", "animado", "empolgado", "sorrindo"]
+    palavras_neutras = ["neutro", "indiferente", "tanto faz", "normal", "ok"]
+    palavras_motivacao = ["motivado", "determinado", "focado", "vencer", "disciplinado"]
+    palavras_nostalgia = ["nostalgia", "saudade", "lembrança", "recordação", "passado"]
+    
+    # 🔥 Verificar feedbacks corrigidos antes de retornar um sentimento
+    feedback_corrigido = await Feedback.filter(sentimento_detectado=texto).first()
+    if feedback_corrigido:
+        return feedback_corrigido.sentimento_corrigido  # Usa a correção do usuário!
+    
+    # 🔥 Verifica palavras-chave no texto digitado
     texto_lower = texto.lower()
 
-    if any(palavra in texto_lower for palavra in palavras_neutras):
-        return "Neutro 😐"
-    elif any(palavra in texto_lower for palavra in palavras_raiva):
+    if any(palavra in texto_lower for palavra in palavras_raiva):
         return "Raiva 😡"
     elif any(palavra in texto_lower for palavra in palavras_tristeza):
         return "Negativo 😢"
     elif any(palavra in texto_lower for palavra in palavras_felicidade):
         return "Positivo 😀"
+    elif any(palavra in texto_lower for palavra in palavras_neutras):
+        return "Neutro 😐"
+    elif any(palavra in texto_lower for palavra in palavras_motivacao):
+        return "Motivação 💪"
+    elif any(palavra in texto_lower for palavra in palavras_nostalgia):
+        return "Nostalgia 🕰️"
 
-    # 🔥 Caso nenhuma palavra-chave seja encontrada, usar a análise do BERT
     if "1" in label or "2" in label:
         return "Negativo 😢"
     elif "3" in label:
         return "Neutro 😐"
     elif "4" in label or "5" in label:
         return "Positivo 😀"
-    
+
     return "Indefinido 🤔"
 
 # Endpoint para análise de sentimento
@@ -78,7 +87,7 @@ def analisar_sentimento(dados: TextoEntrada):
     return {"sentimento": sentimento}
 
 # Função para recomendar playlists com base no sentimento
-def recomendar_playlist(sentimento):
+async def recomendar_playlist(sentimento):
     categorias = {
         "Positivo 😀": ["Happy", "Good Vibes", "Energia", "Alegria"],
         "Negativo 😢": ["Sad", "Tristeza", "Depressivo", "Chorar"],
@@ -86,6 +95,11 @@ def recomendar_playlist(sentimento):
         "Raiva 😡": ["Rock Pesado", "Metal", "Rap Revoltado", "Hardcore", "Furia"]
     }
 
+    # 🔥 Se houver feedback corrigindo um sentimento, usar a versão corrigida
+    feedback_corrigido = await Feedback.filter(sentimento_detectado=sentimento).first()
+    if feedback_corrigido and feedback_corrigido.sentimento_corrigido:
+        sentimento = feedback_corrigido.sentimento_corrigido
+        
     palavras_chave = categorias.get(sentimento, ["Chill"])
     query = " OR ".join(palavras_chave)
 
@@ -124,10 +138,10 @@ def recomendar_playlist(sentimento):
 # Endpoint para recomendar playlists baseado no sentimento
 @app.post("/recomendar_playlist/")
 async def recomendar(dados: TextoEntrada):
-    sentimento = analisar_sentimento_bert(dados.texto)
-    playlist_escolhida = recomendar_playlist(sentimento)
+    sentimento = await analisar_sentimento_bert(dados.texto)  
 
-    if "erro" not in playlist_escolhida:  # Verifica se a recomendação deu certo
+    playlist_escolhida = await recomendar_playlist(sentimento) 
+    if "erro" not in playlist_escolhida:
         async with in_transaction():
             await HistoricoBusca.create(
                 texto_digitado=dados.texto,
@@ -140,12 +154,51 @@ async def recomendar(dados: TextoEntrada):
     
     return {"erro": "Nenhuma playlist encontrada."}
 
-# Configuração para servir a interface web
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+# 🔥 Lista de palavras-chave aprendidas com feedback
+palavras_personalizadas = {
+    "Raiva 😡": [],
+    "Negativo 😢": [],
+    "Positivo 😀": [],
+    "Neutro 😐": []
+}
+
+def ajustar_palavras_chave(sentimento_errado, sentimento_correto):
+    """
+    Ajusta a classificação de sentimentos com base nos feedbacks recebidos.
+    Se um erro for corrigido muitas vezes, ele será adicionado como nova palavra-chave para o sentimento correto.
+    """
+    if sentimento_correto in palavras_personalizadas:
+        palavras_personalizadas[sentimento_correto].append(sentimento_errado.lower())
+
+    print(f"🔥 Ajuste de palavras-chave: {palavras_personalizadas}")
+
+@app.post("/feedback/")
+async def receber_feedback(dados: dict):
+    sentimento_atual = dados.get("sentimento")
+    confirmado = dados.get("confirmado")
+    correcao = dados.get("correcao")
+    
+    if not sentimento_atual:
+        return {"erro": "Sentimento não informado."}
+    
+    sentimento_corrigido = sentimento_atual if confirmado else correcao
+
+    await Feedback.create(
+        sentimento_detectado=sentimento_atual,
+        sentimento_corrigido=sentimento_corrigido,
+        confirmado=confirmado
+    )
+
+    # 🔥 Se houver muitas correções para o mesmo sentimento, substituímos a palavra-chave original!
+    if not confirmado:
+        correcao_count = await Feedback.filter(sentimento_detectado=sentimento_atual, confirmado=False).count()
+        if correcao_count >= 3:  # Se houver muitas correções, alterar a lógica de palavras-chave!
+            ajustar_palavras_chave(sentimento_atual, sentimento_corrigido)
+
+    return {"mensagem": "Feedback salvo com sucesso! Obrigado por contribuir!"}
 
 @app.get("/", response_class=HTMLResponse)
-def home(request: Request):
+def home(request: Request): 
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/historico/")
@@ -190,3 +243,16 @@ async def obter_estatisticas():
         "Raiva 😡": contagem.get("Raiva 😡", 0)
     })
 
+@app.get("/estatisticas_feedback/")
+async def estatisticas_feedback():
+    feedbacks = await Feedback.all()
+    
+    total = len(feedbacks)
+    confirmados = sum(1 for f in feedbacks if f.confirmado)
+    corrigidos = total - confirmados
+
+    return {"Confirmados": confirmados, "Corrigidos": corrigidos}
+
+# Configuração para servir a interface web
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")

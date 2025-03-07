@@ -1,0 +1,24 @@
+body.dark-mode {
+    background-color: #121212;
+    color: white;
+}
+
+.dark-mode .container {
+    background-color: #1e1e1e;
+    color: white;
+}
+
+.dark-mode-btn {
+    background-color: #fff;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.dark-mode .dark-mode-btn {
+    background-color: #000;
+    color: #fff;
+}
