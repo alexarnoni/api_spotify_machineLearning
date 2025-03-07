@@ -192,6 +192,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+    // Carregar Header
+    fetch("./partials/_header.html")
+        .then(response => response.text())
+        .then(data => document.getElementById("header-container").innerHTML = data);
+
+    // Carregar Footer
+    fetch("./partials/_footer.html")
+        .then(response => response.text())
+        .then(data => document.getElementById("footer-container").innerHTML = data);
+});
+
 window.onload = function () {
     carregarHistorico();
     setTimeout(carregarEstatisticas, 500);
