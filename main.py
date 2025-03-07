@@ -143,10 +143,46 @@ async def recomendar(dados: TextoEntrada):
 
     return {"erro": "Nenhuma playlist encontrada."}
 
-# ✅ Endpoint para exibir a página inicial (frontend)
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+# ✅ Endpoint para listar o histórico de buscas
+@app.get("/historico/")
+async def listar_historico():
+    try:
+        historico = await HistoricoBusca.all().order_by("-id")
+        return [
+            {
+                "texto_digitado": item.texto_digitado,
+                "sentimento": item.sentimento,
+                "playlist_nome": item.playlist_nome,
+                "playlist_id": item.playlist_id,
+                "link": f"https://open.spotify.com/playlist/{item.playlist_id}"
+            }
+            for item in historico
+        ]
+    except Exception as e:
+        return {"erro": str(e)}
+
+# ✅ Endpoint para receber feedback do usuário
+@app.post("/feedback/")
+async def receber_feedback(dados: dict):
+    try:
+        sentimento_atual = dados.get("sentimento")
+        confirmado = dados.get("confirmado")
+        correcao = dados.get("correcao")
+
+        if not sentimento_atual:
+            return {"erro": "Sentimento não informado."}
+
+        sentimento_corrigido = sentimento_atual if confirmado else correcao
+
+        await Feedback.create(
+            sentimento_detectado=sentimento_atual,
+            sentimento_corrigido=sentimento_corrigido,
+            confirmado=confirmado
+        )
+
+        return {"mensagem": "Feedback salvo com sucesso!"}
+    except Exception as e:
+        return {"erro": str(e)}
 
 # ✅ Endpoint para estatísticas de sentimentos
 @app.get("/estatisticas/")
@@ -161,4 +197,3 @@ async def obter_estatisticas():
 async def estatisticas_feedback():
     feedbacks = await Feedback.all()
     return {"Confirmados": sum(f.confirmado for f in feedbacks), "Corrigidos": len(feedbacks)}
-
