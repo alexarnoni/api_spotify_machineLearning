@@ -8,6 +8,9 @@
 body {
     background-color: #f8f9fa;
     font-family: Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* 📜 Histórico e 📊 Estatísticas lado a lado */
@@ -42,3 +45,30 @@ body {
     margin-top: 10px;
 }
 
+/* 🌙 Correção do Dark Mode no Footer */
+.dark-mode footer {
+    background-color: #222;  /* Fundo escuro */
+    color: #f1f1f1;  /* Texto claro */
+    border-top: 2px solid #444;
+    padding: 15px 0;
+    text-align: center;
+}
+
+/* 🌙 Ajustar Links no Footer */
+.dark-mode footer a {
+    color: #f1f1f1;
+    text-decoration: none;
+}
+
+.dark-mode footer a:hover {
+    color: #bbbbbb;
+}
+
+/* 📌 Footer sempre no final */
+footer {
+    margin-top: auto; 
+    text-align: center;
+    padding: 10px 0;
+    background: #f1f1f1;
+    width: 100%;
+}

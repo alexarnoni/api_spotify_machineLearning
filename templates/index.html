@@ -79,24 +79,11 @@
 </div>
 
 <!-- FOOTER -->
-{% include 'shared/_footer.html' %} 
+{% include 'shared/_footer.html' %}
 
 <!-- Importação do JavaScript -->
 <script src="{{ url_for('static', path='/script.js') }}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-    // Carregar Header e Footer dinamicamente via fetch()
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch("{{ url_for('static', path='/partials/_header.html') }}")
-            .then(response => response.text())
-            .then(data => document.getElementById("header-container").innerHTML = data);
-
-        fetch("{{ url_for('static', path='/partials/_footer.html') }}")
-            .then(response => response.text())
-            .then(data => document.getElementById("footer-container").innerHTML = data);
-    });
-</script>
 
 </body>
 </html>

@@ -90,49 +90,6 @@ async function carregarHistorico() {
     }
 }
 
-async function carregarEstatisticas() {
-    try {
-        let response = await fetch(`${apiUrl}/estatisticas/`);
-        let data = await response.json();
-
-        let ctx = document.getElementById("grafico-estatisticas").getContext("2d");
-
-        if (window.graficoEstatisticas) {
-            window.graficoEstatisticas.destroy();
-        }
-
-        window.graficoEstatisticas = new Chart(ctx, {
-            type: "doughnut",
-            data: {
-                labels: ["Positivo 😀", "Negativo 😢", "Neutro 😐", "Raiva 😡", "Motivação 💪", "Nostalgia 🕰️"],
-                datasets: [{
-                    label: "Quantidade de buscas",
-                    data: [
-                        data["Positivo 😀"] || 0,
-                        data["Negativo 😢"] || 0,
-                        data["Neutro 😐"] || 0,
-                        data["Raiva 😡"] || 0,
-                        data["Motivação 💪"] || 0,
-                        data["Nostalgia 🕰️"] || 0
-                    ],
-                    backgroundColor: ["#28a745", "#dc3545", "#ffc107", "#6c757d", "#007bff", "#ff69b4"]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: "bottom"
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error("Erro ao carregar estatísticas:", error);
-    }
-}
-
 async function enviarFeedback(confirmado) {
     let sentimentoAtual = document.getElementById("playlist-sentimento").innerText;
     let sentimentoCorrigido = null;
@@ -160,55 +117,27 @@ async function enviarFeedback(confirmado) {
     }
 }
 
-async function carregarEstatisticasFeedback() {
-    try {
-        let response = await fetch(`${apiUrl}/estatisticas_feedback/`);
-        let data = await response.json();
-
-        let ctx = document.getElementById("grafico-feedback").getContext("2d");
-
-        if (window.graficoFeedback) {
-            window.graficoFeedback.destroy();
-        }
-
-        window.graficoFeedback = new Chart(ctx, {
-            type: "pie",
-            data: {
-                labels: ["Confirmados ✅", "Corrigidos ❌"],
-                datasets: [{
-                    data: [data["Confirmados"] || 0, data["Corrigidos"] || 0],
-                    backgroundColor: ["#28a745", "#dc3545"]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: "bottom"
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error("Erro ao carregar estatísticas de feedback:", error);
-    }
-}
-
-// 🚀 Carregar Header e Footer automaticamente
+// 🚀 Configurar Dark Mode corretamente
 document.addEventListener("DOMContentLoaded", function () {
-    fetch("/static/partials/_header.html")
-        .then(response => response.text())
-        .then(data => document.getElementById("header-container").innerHTML = data);
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    const body = document.body;
 
-    fetch("/static/partials/_footer.html")
-        .then(response => response.text())
-        .then(data => document.getElementById("footer-container").innerHTML = data);
+    if (localStorage.getItem("darkMode") === "enabled") {
+        body.classList.add("dark-mode");
+    }
+
+    darkModeToggle.addEventListener("click", function () {
+        body.classList.toggle("dark-mode");
+
+        if (body.classList.contains("dark-mode")) {
+            localStorage.setItem("darkMode", "enabled");
+        } else {
+            localStorage.setItem("darkMode", "disabled");
+        }
+    });
 });
 
 // 🚀 Inicializar ao carregar a página
 window.onload = function () {
     carregarHistorico();
-    setTimeout(carregarEstatisticas, 500);
-    setTimeout(carregarEstatisticasFeedback, 800);
 };
