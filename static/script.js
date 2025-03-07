@@ -90,6 +90,42 @@ async function carregarHistorico() {
     }
 }
 
+async function carregarEstatisticas() {
+    let response = await fetch(`${apiUrl}/estatisticas/`);
+    let data = await response.json();
+    
+    let ctx = document.getElementById("grafico-estatisticas").getContext("2d");
+    
+    if (window.graficoEstatisticas) {
+        window.graficoEstatisticas.destroy();
+    }
+
+    window.graficoEstatisticas = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+            labels: ["Positivo 😀", "Negativo 😢", "Neutro 😐", "Raiva 😡", "Motivação 💪", "Nostalgia 🕰️"],
+            datasets: [{
+                data: [
+                    data["Positivo 😀"] || 0,
+                    data["Negativo 😢"] || 0,
+                    data["Neutro 😐"] || 0,
+                    data["Raiva 😡"] || 0,
+                    data["Motivação 💪"] || 0,
+                    data["Nostalgia 🕰️"] || 0
+                ],
+                backgroundColor: ["#28a745", "#dc3545", "#ffc107", "#6c757d", "#007bff", "#ff69b4"]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "bottom" }
+            }
+        }
+    });
+}
+
 async function enviarFeedback(confirmado) {
     let sentimentoAtual = document.getElementById("playlist-sentimento").innerText;
     let sentimentoCorrigido = null;
@@ -137,7 +173,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// 🚀 Inicializar ao carregar a página
+
+// Atualiza os gráficos ao carregar a página
 window.onload = function () {
     carregarHistorico();
+    setTimeout(carregarEstatisticas, 500);
+    setTimeout(carregarEstatisticasFeedback, 800);
 };

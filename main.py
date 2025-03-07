@@ -49,6 +49,10 @@ templates = Jinja2Templates(directory="templates")
 class TextoEntrada(BaseModel):
     texto: str
 
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
 # ✅ Função para análise de sentimentos
 async def analisar_sentimento_bert(texto):
     # 🔥 Verificar feedbacks corrigidos antes de retornar um sentimento
